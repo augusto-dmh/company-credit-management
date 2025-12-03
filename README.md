@@ -55,6 +55,7 @@ docker compose exec app php artisan migrate
 ```bash
 docker compose exec app php artisan test
 ```
+<img width="1090" height="602" alt="image" src="https://github.com/user-attachments/assets/15bbb314-54c4-4d04-9583-1ba0cbf31974" />
 
 ## ✨ Features
 
