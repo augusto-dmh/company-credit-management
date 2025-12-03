@@ -2,6 +2,8 @@
 
 Sistema web para cadastro de empresas e cálculo de créditos tributários de ICMS.
 
+https://github.com/user-attachments/assets/a6f48b6e-a6ca-4a5e-910d-0309db95d279
+
 ## 🎯 Sobre
 
 Aplicação que permite o cadastro de empresas com seus valores de ICMS pago e créditos possíveis, gerando relatórios com cálculo automático de percentual de crédito. Inclui dashboard com visualização gráfica dos dados e exportação de relatórios em PDF.
