@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CnpjValido;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEmpresaRequest extends FormRequest
@@ -18,7 +19,7 @@ class StoreEmpresaRequest extends FormRequest
     {
         return [
             'nome' => ['required', 'string', 'max:255'],
-            'cnpj' => ['required', 'string', 'regex:/^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/'],
+            'cnpj' => ['required', 'string', new CnpjValido()],
             'icms_pago' => ['required', 'numeric', 'min:0'],
             'credito_possivel' => ['required', 'numeric', 'min:0'],
         ];
@@ -28,12 +29,14 @@ class StoreEmpresaRequest extends FormRequest
     {
         return [
             'nome.required' => 'O nome da empresa é obrigatório.',
+            'nome.max' => 'O nome da empresa não pode ter mais de 255 caracteres.',
             'cnpj.required' => 'O CNPJ é obrigatório.',
-            'cnpj.regex' => 'O CNPJ deve ter 14 dígitos.',
             'icms_pago.required' => 'O valor de ICMS pago é obrigatório.',
-            'icms_pago.min' => 'O valor de ICMS pago não pode ser negativo.',
-            'credito_possivel.required' => 'O valor de créditos possíveis é obrigatório.',
-            'credito_possivel.min' => 'O valor de créditos possíveis não pode ser negativo.',
+            'icms_pago.numeric' => 'O valor de ICMS deve ser um número.',
+            'icms_pago.min' => 'O valor de ICMS não pode ser negativo.',
+            'credito_possivel.required' => 'O valor de crédito possível é obrigatório.',
+            'credito_possivel.numeric' => 'O valor de crédito deve ser um número.',
+            'credito_possivel.min' => 'O valor de crédito não pode ser negativo.',
         ];
     }
 
@@ -44,7 +47,7 @@ class StoreEmpresaRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if ($this->has('cnpj')) {
+        if ($this->cnpj) {
             $this->merge([
                 'cnpj' => preg_replace('/\D/', '', $this->cnpj),
             ]);
