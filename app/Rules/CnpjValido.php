@@ -13,17 +13,19 @@ class CnpjValido implements ValidationRule
 
         if (strlen($cnpj) !== 14) {
             $fail('O CNPJ deve ter 14 dígitos.');
+
             return;
         }
 
         // Rejeita CNPJs com todos os dígitos iguais
         if (preg_match('/^(\d)\1{13}$/', $cnpj)) {
             $fail('O CNPJ informado é inválido.');
+
             return;
         }
 
         // Validação dos dígitos verificadores
-        if (!$this->validarDigitos($cnpj)) {
+        if (! $this->validarDigitos($cnpj)) {
             $fail('O CNPJ informado é inválido.');
         }
     }

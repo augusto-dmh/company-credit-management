@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 
 describe('EmpresaService', function () {
     it('creates an empresa with sanitized cnpj', function () {
-        $service = new EmpresaService();
+        $service = new EmpresaService;
 
         $empresa = $service->create([
             'nome' => 'ACME LTDA',
@@ -23,7 +23,7 @@ describe('EmpresaService', function () {
     });
 
     it('retrieves all empresas ordered by latest', function () {
-        $service = new EmpresaService();
+        $service = new EmpresaService;
 
         Empresa::factory()->count(3)->create();
 
@@ -33,7 +33,7 @@ describe('EmpresaService', function () {
     });
 
     it('finds empresa by id', function () {
-        $service = new EmpresaService();
+        $service = new EmpresaService;
         $empresa = Empresa::factory()->create();
 
         $found = $service->findById($empresa->id);
@@ -42,7 +42,7 @@ describe('EmpresaService', function () {
     });
 
     it('returns null when empresa not found', function () {
-        $service = new EmpresaService();
+        $service = new EmpresaService;
 
         $found = $service->findById(999);
 

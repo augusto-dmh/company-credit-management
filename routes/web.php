@@ -3,7 +3,7 @@
 use App\Http\Controllers\EmpresaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn() => redirect()->route('empresa.create'));
+Route::get('/', fn () => redirect()->route('empresa.create'));
 
 Route::prefix('empresa')->name('empresa.')->group(function () {
     Route::get('/', [EmpresaController::class, 'index'])->name('index');

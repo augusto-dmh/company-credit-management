@@ -45,11 +45,11 @@ class Empresa extends Model
 
     public function getIcmsPagoFormatadoAttribute(): string
     {
-        return 'R$ ' . number_format($this->icms_pago, 2, ',', '.');
+        return 'R$ '.number_format($this->icms_pago, 2, ',', '.');
     }
 
     public function getCreditoPossivelFormatadoAttribute(): string
     {
-        return 'R$ ' . number_format($this->credito_possivel, 2, ',', '.');
+        return 'R$ '.number_format($this->credito_possivel, 2, ',', '.');
     }
 }

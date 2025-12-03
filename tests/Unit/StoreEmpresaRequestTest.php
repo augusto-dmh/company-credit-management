@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Validator;
 describe('StoreEmpresaRequest', function () {
     function validateRequest(array $data): \Illuminate\Validation\Validator
     {
-        $request = new StoreEmpresaRequest();
+        $request = new StoreEmpresaRequest;
 
         return Validator::make($data, $request->rules(), $request->messages());
     }

@@ -19,7 +19,7 @@ class StoreEmpresaRequest extends FormRequest
     {
         return [
             'nome' => ['required', 'string', 'max:255'],
-            'cnpj' => ['required', 'string', new CnpjValido()],
+            'cnpj' => ['required', 'string', new CnpjValido],
             'icms_pago' => ['required', 'numeric', 'min:0'],
             'credito_possivel' => ['required', 'numeric', 'min:0'],
         ];
