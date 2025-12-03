@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEmpresaRequest;
 use App\Services\EmpresaService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class EmpresaController extends Controller
@@ -43,5 +45,18 @@ class EmpresaController extends Controller
         }
 
         return view('empresa.relatorio', compact('empresa'));
+    }
+
+    public function exportPdf(int $id): Response
+    {
+        $empresa = $this->empresaService->findById($id);
+
+        if (! $empresa) {
+            abort(404, 'Empresa não encontrada.');
+        }
+
+        $pdf = Pdf::loadView('empresa.relatorio-pdf', compact('empresa'));
+
+        return $pdf->download("relatorio-{$empresa->cnpj}.pdf");
     }
 }
