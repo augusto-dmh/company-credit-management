@@ -84,28 +84,36 @@
             </form>
         </div>
     </div>
+@endsection
 
-    <script>
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Script carregado!'); // Debug
+
         // CNPJ mask
-        document.getElementById('cnpj').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            if (value.length > 14) {
-                value = value.slice(0, 14);
-            }
-            
-            if (value.length > 12) {
-                value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
-            } else if (value.length > 8) {
-                value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d*).*/, '$1.$2.$3/$4');
-            } else if (value.length > 5) {
-                value = value.replace(/^(\d{2})(\d{3})(\d*).*/, '$1.$2.$3');
-            } else if (value.length > 2) {
-                value = value.replace(/^(\d{2})(\d*).*/, '$1.$2');
-            }
-            
-            e.target.value = value;
-        });
+        const cnpjInput = document.getElementById('cnpj');
+        if (cnpjInput) {
+            cnpjInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 14) {
+                    value = value.slice(0, 14);
+                }
+                
+                if (value.length > 12) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
+                } else if (value.length > 8) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d{3})(\d*).*/, '$1.$2.$3/$4');
+                } else if (value.length > 5) {
+                    value = value.replace(/^(\d{2})(\d{3})(\d*).*/, '$1.$2.$3');
+                } else if (value.length > 2) {
+                    value = value.replace(/^(\d{2})(\d*).*/, '$1.$2');
+                }
+                
+                e.target.value = value;
+            });
+        }
 
         // Clear error messages on input
         document.querySelectorAll('input').forEach(input => {
@@ -116,59 +124,108 @@
         });
 
         // AJAX form submission
-        document.getElementById('empresa-form').addEventListener('submit', function(e) {
-            const useAjax = document.getElementById('use-ajax').checked;
-            
-            if (!useAjax) return;
-            
-            e.preventDefault();
-            
-            const form = e.target;
-            const submitBtn = document.getElementById('submit-btn');
-            const messagesDiv = document.getElementById('form-messages');
-            
-            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-            messagesDiv.innerHTML = '';
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Enviando...';
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            
-            const formData = new FormData(form);
-            
-            fetch('/api/empresa', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': formData.get('_token'),
-                },
-                body: formData
-            })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
-            .then(({ status, body }) => {
-                if (status === 201) {
-                    messagesDiv.innerHTML = '<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">' + body.message + '</div>';
-                    window.location.href = body.redirect_url;
-                } else if (status === 422) {
-                    Object.keys(body.errors || {}).forEach(field => {
-                        const errorSpan = document.getElementById(field + '-error');
-                        if (errorSpan) {
-                            errorSpan.textContent = body.errors[field][0];
-                        }
-                    });
-                } else {
-                    messagesDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">Erro ao cadastrar empresa.</div>';
+        const form = document.getElementById('empresa-form');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                const useAjax = document.getElementById('use-ajax').checked;
+                
+                console.log('Form submitted, useAjax:', useAjax); // Debug
+                
+                if (!useAjax) {
+                    console.log('Submitting normally...'); // Debug
+                    return true; // Submit normal (SSR)
                 }
-            })
-            .catch(error => {
-                messagesDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">Erro de conexão.</div>';
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Cadastrar Empresa';
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Using AJAX...'); // Debug
+                
+                const submitBtn = document.getElementById('submit-btn');
+                const messagesDiv = document.getElementById('form-messages');
+                
+                // Clear previous errors
+                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+                messagesDiv.innerHTML = '';
+                
+                // Disable button
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch('/api/empresa', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': formData.get('_token'),
+                        },
+                        body: formData
+                    });
+                    
+                    console.log('Response status:', response.status); // Debug
+                    
+                    const data = await response.json();
+                    
+                    console.log('Response data:', data); // Debug
+                    
+                    if (response.status === 201) {
+                        // Success
+                        messagesDiv.innerHTML = `
+                            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                                <strong>Sucesso!</strong> ${data.message}<br>
+                                <small>Redirecionando para o relatório...</small>
+                            </div>
+                        `;
+                        
+                        // Redirect after showing success message
+                        setTimeout(function() {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                        
+                    } else if (response.status === 422) {
+                        // Validation errors
+                        const errors = data.errors || {};
+                        Object.keys(errors).forEach(field => {
+                            const errorSpan = document.getElementById(field + '-error');
+                            if (errorSpan) {
+                                errorSpan.textContent = errors[field][0];
+                            }
+                        });
+                        
+                        messagesDiv.innerHTML = `
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                                Por favor, corrija os erros abaixo.
+                            </div>
+                        `;
+                        
+                        // Re-enable button only on error
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Cadastrar Empresa';
+                        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        
+                    } else {
+                        throw new Error(data.message || 'Erro inesperado');
+                    }
+                    
+                } catch (error) {
+                    console.error('Fetch error:', error); // Debug
+                    
+                    messagesDiv.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                            Erro de conexão: ${error.message}
+                        </div>
+                    `;
+                    
+                    // Re-enable button on error
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Cadastrar Empresa';
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             });
-        });
-    </script>
+        }
+    });
+</script>
 @endsection

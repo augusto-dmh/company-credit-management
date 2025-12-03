@@ -43,5 +43,7 @@
             <p>{{ date('Y') }} - Auditoria Tributária</p>
         </div>
     </footer>
+
+    @yield('scripts')
 </body>
 </html>
