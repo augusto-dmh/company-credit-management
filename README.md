@@ -1,59 +1,94 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema de Gestão de Créditos Tributários
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema web para cadastro de empresas e cálculo de créditos tributários de ICMS.
 
-## About Laravel
+## 🎯 Sobre
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Aplicação que permite o cadastro de empresas com seus valores de ICMS pago e créditos possíveis, gerando relatórios com cálculo automático de percentual de crédito. Inclui dashboard com visualização gráfica dos dados e exportação de relatórios em PDF.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Tecnologias
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Camada | Tecnologia |
+|--------|------------|
+| Backend | PHP 8.3, Laravel 12 |
+| Frontend | Blade, Tailwind CSS 4, Chart.js |
+| Banco de Dados | SQLite |
+| Infraestrutura | Docker, Docker Compose |
+| Build | Vite |
+| Testes | Pest PHP |
+| PDF | DomPDF |
 
-## Learning Laravel
+## 🚀 Como Rodar
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Pré-requisitos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Docker e Docker Compose instalados
 
-## Laravel Sponsors
+### Instalação
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+# Clone o repositório
+git clone https://github.com/augusto-dmh/company-credit-management.git
+cd company-credit-management
 
-### Premium Partners
+# Copie o arquivo de ambiente
+cp .env.example .env
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Suba os containers
+docker compose up -d --build
 
-## Contributing
+# Instale as dependências
+docker compose exec app composer install
+docker compose exec app npm install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Gere a chave da aplicação
+docker compose exec app php artisan key:generate
 
-## Code of Conduct
+# Execute as migrations
+docker compose exec app php artisan migrate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Testes
 
-## Security Vulnerabilities
+```bash
+docker compose exec app php artisan test
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## ✨ Features
 
-## License
+- **Cadastro de Empresas**: Formulário com validação de CNPJ (dígitos verificadores)
+- **Dashboard**: Cards com totalizadores e gráficos interativos
+- **Relatórios**: Visualização individual por empresa com percentual de crédito
+- **Exportação PDF**: Download de relatório formatado
+- **AJAX**: Submissão de formulário sem recarregar página (opcional)
+- **Máscara de CNPJ**: Formatação automática no input
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🏗️ Decisões Técnicas
+
+### Arquitetura
+
+- **Service Layer**: Lógica de negócio isolada em `EmpresaService` para facilitar testes e manutenção
+- **Form Requests**: Validação separada em classes dedicadas (`StoreEmpresaRequest`)
+- **Custom Rules**: Validação de CNPJ com verificação de dígitos em `App\Rules\CnpjValido`
+
+### API
+
+- **Rotas separadas**: Web para SSR, API para AJAX (`/api/empresa`)
+- **Controller dedicado**: `Api\EmpresaController` retorna JSON
+
+### Frontend
+
+- **Tailwind CSS 4**: Nova sintaxe com `@import 'tailwindcss'`
+- **Chart.js via Vite**: Importado como módulo, não CDN como geralmente vejo por aí (acho má prática, vi muita empresa sofrendo com a queda da AWS por isso)
+- **Scripts modulares**: `resources/js/charts.js` separado do `app.js` e <script> "não abusado" (já sofri dando manutenção em blade view com tag script gigante).
+
+### Infraestrutura
+
+- **SQLite**: Banco simples para desenvolvimento, sem necessidade de container extra dedicado a um mysql da vida
+- **Single container**: PHP CLI com Artisan serve, adequado para desenvolvimento
+- **Vite no Docker**: Configurado com `host: 0.0.0.0` para acesso externo
+
+### Testes
+
+- **Pest PHP**: Sintaxe expressiva (para qualquer um ler e entender) com `describe`/`it`
+- **Feature vs Unit**: Testes apenas unitários (decidi por ser mais quick-win que de integração e de mais fácil manutenibilidade caso fosse necessário)
