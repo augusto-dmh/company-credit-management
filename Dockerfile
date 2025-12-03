@@ -2,12 +2,17 @@ FROM php:8.3-cli
 
 # Install app dependencies and necessary php extensions
 RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    ca-certificates \
     git \
     unzip \
     libsqlite3-dev \
-    nodejs \
-    npm \
+    build-essential \
     && docker-php-ext-install pdo_sqlite bcmath
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Create a user with the same UID as my local user
 ARG UID=1000
