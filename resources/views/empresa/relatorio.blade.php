@@ -15,6 +15,7 @@
 
     <br>
 
+    <a href="{{ route('empresa.pdf', $empresa->id) }}">📄 Baixar PDF</a> |
     <a href="{{ route('empresa.create') }}">Cadastrar Nova Empresa</a> |
     <a href="{{ route('empresa.index') }}">Ver Todas as Empresas</a>
 @endsection
