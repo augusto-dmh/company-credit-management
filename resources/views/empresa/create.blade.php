@@ -5,7 +5,9 @@
 @section('content')
     <h2>Cadastrar Empresa</h2>
 
-    <form action="{{ route('empresa.store') }}" method="POST">
+    <div id="form-messages"></div>
+
+    <form id="empresa-form" action="{{ route('empresa.store') }}" method="POST">
         @csrf
 
         <div>
@@ -14,6 +16,7 @@
             @error('nome')
                 <p style="color: red;">{{ $message }}</p>
             @enderror
+            <span class="error-message" id="nome-error" style="color: red;"></span>
         </div>
 
         <br>
@@ -25,6 +28,7 @@
             @error('cnpj')
                 <p style="color: red;">{{ $message }}</p>
             @enderror
+            <span class="error-message" id="cnpj-error" style="color: red;"></span>
         </div>
 
         <br>
@@ -36,6 +40,7 @@
             @error('icms_pago')
                 <p style="color: red;">{{ $message }}</p>
             @enderror
+            <span class="error-message" id="icms_pago-error" style="color: red;"></span>
         </div>
 
         <br>
@@ -47,15 +52,25 @@
             @error('credito_possivel')
                 <p style="color: red;">{{ $message }}</p>
             @enderror
+            <span class="error-message" id="credito_possivel-error" style="color: red;"></span>
         </div>
 
         <br>
 
-        <button type="submit">Cadastrar</button>
+        <div>
+            <label>
+                <input type="checkbox" id="use-ajax" checked> 
+                Enviar sem recarregar página (AJAX)
+            </label>
+        </div>
+
+        <br>
+
+        <button type="submit" id="submit-btn">Cadastrar</button>
     </form>
 
     <script>
-        // Simple CNPJ mask
+        // CNPJ mask
         document.getElementById('cnpj').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             
@@ -74,6 +89,70 @@
             }
             
             e.target.value = value;
+        });
+
+        // Clear error messages on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorSpan = document.getElementById(this.id + '-error');
+                if (errorSpan) errorSpan.textContent = '';
+            });
+        });
+
+        // AJAX form submission
+        document.getElementById('empresa-form').addEventListener('submit', function(e) {
+            const useAjax = document.getElementById('use-ajax').checked;
+            
+            if (!useAjax) return; // Let form submit normally
+            
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = document.getElementById('submit-btn');
+            const messagesDiv = document.getElementById('form-messages');
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            messagesDiv.innerHTML = '';
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+            
+            const formData = new FormData(form);
+            
+            fetch('/api/empresa', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                },
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 201) {
+                    messagesDiv.innerHTML = '<p style="color: green;">' + body.message + '</p>';
+                    window.location.href = body.redirect_url;
+                } else if (status === 422) {
+                    // Validation errors
+                    Object.keys(body.errors || {}).forEach(field => {
+                        const errorSpan = document.getElementById(field + '-error');
+                        if (errorSpan) {
+                            errorSpan.textContent = body.errors[field][0];
+                        }
+                    });
+                } else {
+                    messagesDiv.innerHTML = '<p style="color: red;">Erro ao cadastrar empresa.</p>';
+                }
+            })
+            .catch(error => {
+                messagesDiv.innerHTML = '<p style="color: red;">Erro de conexão.</p>';
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Cadastrar';
+            });
         });
     </script>
 @endsection
